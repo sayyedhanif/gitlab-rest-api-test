@@ -3,19 +3,13 @@ var request = require('request');
 const config = require('../config')
 
 class Teams {
-  static getOrgTeams(headers,params) {
+  static getGroupMembers(headers,params) {
     return new Promise(async (resolve, reject) => {
 			request({
 				method: 'GET',
-				url: `https://api.github.com/orgs/${params.org_name}/teams`,
-				auth : {
-					user: headers.username,
-					pass: headers.token
-				},
+				url: `https://gitlab.com/api/v4/groups/${params.id}/members`,
 				headers: {
-					"Accept" : "application/vnd.github.inertia-preview+json",
-					"Content-Type": 'application/json',
-					'user-agent': 'node.js'
+					"Private-Token": headers['private-token'],
 				}	
 			}, function (error, response, body) {
 				if (error) {
@@ -30,7 +24,7 @@ class Teams {
 							reject({ success: false, message :'Internal server error!' , data: {}, code : response.statusCode});
 						}
 					}
-					resolve({ success: true, message :'Org teams return successfully!' , data: body, statusCode: 200});
+					resolve({ success: true, message :'Group members fetched successfully!' , data: body, statusCode: 200});
 				} else if(response.statusCode && response.statusCode == 401 || response.statusCode == 403){
 					reject({ success: false, message :'Internal server error!' , data: {}, statusCode : response.statusCode} );
 				} else {
@@ -39,21 +33,15 @@ class Teams {
 			})
 		});
 	}
-	static createTeam(headers,payload,params) {
+	static addGroupMembers(headers,payload,params) {
     return new Promise(async (resolve, reject) => {
 			request({
 				method: 'POST',
-				url: `https://api.github.com/orgs/${params.org_name}/teams`,
-				auth : {
-					user: headers.username,
-					pass: headers.token
-				},
+				url: `https://gitlab.com/api/v4/groups/${params.id}/members`,
 				json:true,
         json: payload,
 				headers: {
-					"Accept" : "application/vnd.github.inertia-preview+json",
-					"Content-Type": 'application/json',
-					'user-agent': 'node.js'
+					"Private-Token": headers['private-token'],
 				}	
 			}, function (error, response, body) {
 				console.log(error,  body)
@@ -69,7 +57,7 @@ class Teams {
 							reject({ success: false, message :'Internal server error!' , data: {}, code : response.statusCode});
 						}
 					}
-					resolve({ success: true, message :'Org team created successfully!' , data: body, statusCode: 201});
+					resolve({ success: true, message :'Member added to group!' , data: body, statusCode: 201});
 				} else if(response.statusCode && response.statusCode == 401 || response.statusCode == 403){
 					reject({ success: false, message :'Authenticaion error!' , data: {}, statusCode : response.statusCode} );
 				} else {
